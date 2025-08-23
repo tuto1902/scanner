@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Services\InventoryApiClient;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+
+class Home extends Component
+{
+    public string $scannedBarcode = '';
+    public string $error = '';
+    public bool $loading = false;
+
+    public function searchByBarcode(InventoryApiClient $apiClient): void
+    {
+        if (empty($this->scannedBarcode)) {
+            $this->error = 'Please scan a barcode first.';
+            return;
+        }
+
+        $this->loading = true;
+        $this->error = '';
+
+        try {
+            $token = session('auth_token');
+            if (!$token) {
+                $this->redirect('/login', navigate: true);
+                return;
+            }
+
+            $response = $apiClient->searchProductByBarcode($this->scannedBarcode, $token);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $productId = $data['data']['id'];
+                $this->redirect("/product/{$productId}/edit", navigate: true);
+            } else {
+                $this->error = 'Product not found. Please try another barcode.';
+            }
+        } catch (\Exception $e) {
+            $this->error = 'Unable to search product. Please try again.';
+        } finally {
+            $this->loading = false;
+        }
+    }
+
+    public function goToSearch(): void
+    {
+        $this->redirect('/search', navigate: true);
+    }
+
+    public function logout(): void
+    {
+        session()->forget('auth_token');
+        $this->dispatch('logout');
+    }
+
+    #[Layout('components.layouts.app')]
+    public function render()
+    {
+        return view('livewire.home');
+    }
+}
