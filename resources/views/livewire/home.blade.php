@@ -3,7 +3,7 @@
         <div class="px-4 py-6 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Scanner App</h1>
-                <button 
+                <button
                     wire:click="logout"
                     class="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                 >
@@ -18,15 +18,15 @@
             <!-- Barcode Scanner Section -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Scan Barcode</h2>
-                
+
                 <!-- Scanner Area -->
-                <div 
+                <div
                     x-data="barcodeScanner()"
                     x-init="init()"
                     class="space-y-4"
                 >
-                    <div 
-                        id="scanner" 
+                    <!-- Placeholder when not scanning -->
+                    <div
                         class="w-full h-64 bg-gray-100 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center"
                         x-show="!isScanning"
                     >
@@ -35,16 +35,23 @@
                         </p>
                     </div>
 
+                    <!-- Scanner element that shows during scanning -->
+                    <div
+                        id="scanner"
+                        class="w-full h-64 rounded-lg overflow-hidden"
+                        x-show="isScanning"
+                    ></div>
+
                     <div class="flex gap-3">
-                        <button 
+                        <button
                             @click="startScanner()"
                             :disabled="isScanning"
                             class="flex-1 bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <span x-text="isScanning ? 'Scanning...' : 'Start Scanner'"></span>
                         </button>
-                        
-                        <button 
+
+                        <button
                             @click="stopScanner()"
                             x-show="isScanning"
                             class="bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700"
@@ -63,7 +70,7 @@
                 <!-- Search Button -->
                 @if($scannedBarcode)
                     <div class="mt-4">
-                        <button 
+                        <button
                             wire:click="searchByBarcode"
                             wire:loading.attr="disabled"
                             class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50"
@@ -78,7 +85,7 @@
             <!-- Search Product Button -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Or Search Manually</h2>
-                <button 
+                <button
                     wire:click="goToSearch"
                     class="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700"
                 >
@@ -101,20 +108,21 @@ function barcodeScanner() {
     return {
         isScanning: false,
         scannedCode: '',
-        
+
         init() {
             // Listen for scanner events
         },
-        
+
         async startScanner() {
             this.isScanning = true;
             try {
                 await Alpine.store('app').startScanner(
                     'scanner',
-                    (decodedText) => {
-                        this.scannedCode = decodedText;
-                        @this.set('scannedBarcode', decodedText);
+                    (decodedText, decodedResult) => {
                         this.stopScanner();
+                        this.isScanning = false;
+                        this.$wire.dispatch('barcode-scanned', {text: decodedText});
+                        console.log(`Scan result: ${decodedText}`, decodedResult);
                     },
                     (error) => {
                         console.log('Scanner error:', error);
@@ -125,7 +133,7 @@ function barcodeScanner() {
                 console.error('Failed to start scanner:', err);
             }
         },
-        
+
         async stopScanner() {
             await Alpine.store('app').stopScanner();
             this.isScanning = false;
