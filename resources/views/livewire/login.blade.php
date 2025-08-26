@@ -21,18 +21,18 @@
                     <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Email address
                     </label>
-                    <input 
-                        wire:model="email" 
-                        id="email" 
-                        name="email" 
-                        type="email" 
-                        autocomplete="email" 
-                        required 
+                    <input
+                        wire:model="email"
+                        id="email"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        required
                         class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                         placeholder="Enter your email"
                     >
-                    @error('email') 
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
+                    @error('email')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -40,25 +40,25 @@
                     <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Password
                     </label>
-                    <input 
-                        wire:model="password" 
-                        id="password" 
-                        name="password" 
-                        type="password" 
-                        autocomplete="current-password" 
-                        required 
+                    <input
+                        wire:model="password"
+                        id="password"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        required
                         class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                         placeholder="Enter your password"
                     >
-                    @error('password') 
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
+                    @error('password')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
             <div>
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                     wire:loading.attr="disabled"
                 >

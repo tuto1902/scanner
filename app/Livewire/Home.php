@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Services\InventoryApiClient;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Home extends Component
@@ -12,6 +13,12 @@ class Home extends Component
     public string $error = '';
     public bool $loading = false;
 
+    #[On('barcode-scanned')]
+    public function barcodeScanned($text)
+    {
+        $this->scannedBarcode = $text;
+        $this->searchByBarcode(app(InventoryApiClient::class));
+    }
     public function searchByBarcode(InventoryApiClient $apiClient): void
     {
         if (empty($this->scannedBarcode)) {

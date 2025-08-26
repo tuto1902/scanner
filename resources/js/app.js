@@ -11,7 +11,7 @@ document.addEventListener('alpine:init', () => {
 
         init() {
             this.isAuthenticated = !!this.token;
-            
+
             // Listen for auth token events
             window.addEventListener('auth-token-received', (event) => {
                 this.setToken(event.detail.token);
@@ -48,21 +48,8 @@ document.addEventListener('alpine:init', () => {
                 this.scanner = new Html5Qrcode(elementId);
                 this.isScanning = true;
 
-                const cameras = await Html5Qrcode.getCameras();
-                if (cameras && cameras.length) {
-                    // Use back camera if available
-                    const cameraId = cameras.length > 1 ? cameras[1].id : cameras[0].id;
-                    
-                    await this.scanner.start(
-                        cameraId,
-                        {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 }
-                        },
-                        onSuccess,
-                        onError
-                    );
-                }
+                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+                this.scanner.start({ facingMode: 'environment' }, config, onSuccess).catch(err => console.error('Unable to start scanning.', err));
             } catch (err) {
                 this.isScanning = false;
                 console.error('Failed to start scanner:', err);
