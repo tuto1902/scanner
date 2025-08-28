@@ -14,6 +14,13 @@
     </div>
 
     <div class="max-w-md mx-auto py-8 px-4">
+        <!-- Success Message -->
+        @if (session('status'))
+            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+                <p class="text-green-800 dark:text-green-200 text-sm">{{ session('status') }}</p>
+            </div>
+        @endif
+
         <div class="space-y-8">
             <!-- Barcode Scanner Section -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
