@@ -10,7 +10,9 @@ use Livewire\Component;
 class Home extends Component
 {
     public string $scannedBarcode = '';
+
     public string $error = '';
+
     public bool $loading = false;
 
     #[On('barcode-scanned')]
@@ -19,10 +21,12 @@ class Home extends Component
         $this->scannedBarcode = $text;
         $this->searchByBarcode(app(InventoryApiClient::class));
     }
+
     public function searchByBarcode(InventoryApiClient $apiClient): void
     {
         if (empty($this->scannedBarcode)) {
             $this->error = 'Please scan a barcode first.';
+
             return;
         }
 
@@ -31,8 +35,9 @@ class Home extends Component
 
         try {
             $token = session('auth_token');
-            if (!$token) {
+            if (! $token) {
                 $this->redirect('/login', navigate: true);
+
                 return;
             }
 
@@ -40,7 +45,12 @@ class Home extends Component
 
             if ($response->successful()) {
                 $data = $response->json();
-                $productId = $data['data']['id'];
+                $productData = $data['data'];
+                $productId = $productData['id'];
+
+                // Store product data in session to avoid duplicate API call
+                session()->put("product_data_{$productId}", $productData);
+
                 $this->redirect("/product/{$productId}/edit", navigate: true);
             } else {
                 $this->error = 'Product not found. Please try another barcode.';
