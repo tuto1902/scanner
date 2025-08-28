@@ -10,25 +10,29 @@ use Livewire\Component;
 class ProductEdit extends Component
 {
     public int $productId;
+
     public array $product = [];
-    
+
     #[Validate('required|string|max:255')]
     public string $name = '';
-    
+
     public string $sku = '';
-    
+
     #[Validate('nullable|string')]
     public string $description = '';
-    
+
     #[Validate('required|numeric|min:0')]
     public float $price = 0;
-    
+
     #[Validate('required|integer|min:0')]
     public int $stock_quantity = 0;
-    
+
     public array $suppliers = [];
+
     public string $error = '';
+
     public string $success = '';
+
     public bool $loading = false;
 
     public function mount(int $id): void
@@ -43,33 +47,53 @@ class ProductEdit extends Component
         $this->error = '';
 
         try {
+            // Check authentication first
             $token = session('auth_token');
-            if (!$token) {
+            if (! $token) {
                 $this->redirect('/login', navigate: true);
+
                 return;
             }
 
-            $apiClient = app(InventoryApiClient::class);
-            $response = $apiClient->searchProductByBarcode("product-{$this->productId}", $token);
+            // Check if we have product data in session (from barcode scan)
+            $sessionKey = "product_data_{$this->productId}";
+            $sessionProductData = session($sessionKey);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $this->product = $data['data'];
-                
-                $this->name = $this->product['name'];
-                $this->sku = $this->product['sku'];
-                $this->description = $this->product['description'] ?? '';
-                $this->price = $this->product['price'];
-                $this->stock_quantity = $this->product['stock_quantity'];
-                $this->suppliers = $this->product['suppliers']['data'] ?? [];
+            if ($sessionProductData) {
+                // Use session data and clear it
+                $this->product = $sessionProductData;
+                session()->forget($sessionKey);
+
+                $this->populateFormFields();
             } else {
-                $this->error = 'Product not found.';
+                // Fallback to API call for direct URL access
+                $apiClient = app(InventoryApiClient::class);
+                $response = $apiClient->getProductById($this->productId, $token);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $this->product = $data['data'];
+
+                    $this->populateFormFields();
+                } else {
+                    $this->error = 'Product not found.';
+                }
             }
         } catch (\Exception $e) {
             $this->error = 'Unable to load product. Please try again.';
         } finally {
             $this->loading = false;
         }
+    }
+
+    private function populateFormFields(): void
+    {
+        $this->name = $this->product['name'];
+        $this->sku = $this->product['sku'];
+        $this->description = $this->product['description'] ?? '';
+        $this->price = $this->product['price'];
+        $this->stock_quantity = $this->product['stock_quantity'];
+        $this->suppliers = $this->product['suppliers']['data'] ?? [];
     }
 
     public function updateProduct(): void
@@ -82,8 +106,9 @@ class ProductEdit extends Component
 
         try {
             $token = session('auth_token');
-            if (!$token) {
+            if (! $token) {
                 $this->redirect('/login', navigate: true);
+
                 return;
             }
 
@@ -99,13 +124,8 @@ class ProductEdit extends Component
                 $data = $response->json();
                 $this->product = $data['data'];
                 $this->success = 'Product updated successfully!';
-                
-                $this->name = $this->product['name'];
-                $this->sku = $this->product['sku'];
-                $this->description = $this->product['description'] ?? '';
-                $this->price = $this->product['price'];
-                $this->stock_quantity = $this->product['stock_quantity'];
-                $this->suppliers = $this->product['suppliers']['data'] ?? [];
+
+                $this->populateFormFields();
             } else {
                 $this->error = 'Unable to update product. Please try again.';
             }

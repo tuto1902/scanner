@@ -39,6 +39,12 @@ class InventoryApiClient
             ]);
     }
 
+    public function getProductById(int $productId, string $token): Response
+    {
+        return Http::withToken($token)
+            ->get("{$this->baseUrl}/product/by-id/{$productId}");
+    }
+
     public function updateProduct(int $productId, array $data, string $token): Response
     {
         return Http::withToken($token)
