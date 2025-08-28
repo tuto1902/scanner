@@ -19,18 +19,12 @@
     <div class="max-w-md mx-auto py-8 px-4">
         <div class="space-y-6">
             <!-- Loading State -->
-            @if($loading && empty($product))
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 text-center">
-                    <div class="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-indigo-600 rounded-full"></div>
-                    <p class="text-gray-500 dark:text-gray-400 mt-2">Loading product...</p>
-                </div>
-            @else
-                <!-- Success Message -->
-                @if($success)
-                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                        <p class="text-green-800 dark:text-green-200 text-sm">{{ $success }}</p>
-                    </div>
-                @endif
+            <div wire:loading.delay wire:target="loadProduct" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 text-center">
+                <div class="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-indigo-600 rounded-full"></div>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Loading product...</p>
+            </div>
+
+            <div wire:loading.remove wire:target="loadProduct">
 
                 <!-- Error Message -->
                 @if($error)
@@ -51,12 +45,12 @@
                                     Name *
                                 </label>
                                 <input 
-                                    wire:model="name"
+                                    wire:model="form.name"
                                     type="text" 
                                     id="name"
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                                 >
-                                @error('name') 
+                                @error('form.name') 
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
                                 @enderror
                             </div>
@@ -69,7 +63,7 @@
                                 <input 
                                     type="text" 
                                     id="sku"
-                                    value="{{ $sku }}"
+                                    value="{{ $form->sku }}"
                                     readonly
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
                                 >
@@ -81,12 +75,12 @@
                                     Description
                                 </label>
                                 <textarea 
-                                    wire:model="description"
+                                    wire:model="form.description"
                                     id="description"
                                     rows="3"
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                                 ></textarea>
-                                @error('description') 
+                                @error('form.description') 
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
                                 @enderror
                             </div>
@@ -101,14 +95,14 @@
                                         <span class="text-gray-500 dark:text-gray-400 sm:text-sm">$</span>
                                     </div>
                                     <input 
-                                        wire:model="price"
+                                        wire:model="form.price"
                                         type="number" 
                                         step="0.01"
                                         id="price"
                                         class="block w-full pl-7 pr-12 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                                     >
                                 </div>
-                                @error('price') 
+                                @error('form.price') 
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
                                 @enderror
                             </div>
@@ -119,12 +113,12 @@
                                     Stock Quantity *
                                 </label>
                                 <input 
-                                    wire:model="stock_quantity"
+                                    wire:model="form.stock_quantity"
                                     type="number" 
                                     id="stock_quantity"
                                     class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                                 >
-                                @error('stock_quantity') 
+                                @error('form.stock_quantity') 
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
                                 @enderror
                             </div>
@@ -132,11 +126,11 @@
                     </div>
 
                     <!-- Suppliers Information (Read-only) -->
-                    @if(count($suppliers) > 0)
+                    @if(count($form->suppliers) > 0)
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Suppliers</h3>
                             <div class="space-y-3">
-                                @foreach($suppliers as $supplier)
+                                @foreach($form->suppliers as $supplier)
                                     <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                                         <h4 class="font-medium text-gray-900 dark:text-white">{{ $supplier['name'] }}</h4>
                                         <p class="text-sm text-gray-600 dark:text-gray-300">{{ $supplier['email'] }}</p>
@@ -164,7 +158,7 @@
                         </button>
                     </div>
                 </form>
-            @endif
+            </div>
         </div>
     </div>
 </div>

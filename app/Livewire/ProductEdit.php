@@ -2,38 +2,18 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Forms\ProductForm;
 use App\Services\InventoryApiClient;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class ProductEdit extends Component
 {
+    public ProductForm $form;
+
     public int $productId;
 
-    public array $product = [];
-
-    #[Validate('required|string|max:255')]
-    public string $name = '';
-
-    public string $sku = '';
-
-    #[Validate('nullable|string')]
-    public string $description = '';
-
-    #[Validate('required|numeric|min:0')]
-    public float $price = 0;
-
-    #[Validate('required|integer|min:0')]
-    public int $stock_quantity = 0;
-
-    public array $suppliers = [];
-
     public string $error = '';
-
-    public string $success = '';
-
-    public bool $loading = false;
 
     public function mount(int $id): void
     {
@@ -43,7 +23,6 @@ class ProductEdit extends Component
 
     public function loadProduct(): void
     {
-        $this->loading = true;
         $this->error = '';
 
         try {
@@ -61,10 +40,9 @@ class ProductEdit extends Component
 
             if ($sessionProductData) {
                 // Use session data and clear it
-                $this->product = $sessionProductData;
                 session()->forget($sessionKey);
 
-                $this->populateFormFields();
+                $this->form->fillFromProduct($sessionProductData);
             } else {
                 // Fallback to API call for direct URL access
                 $apiClient = app(InventoryApiClient::class);
@@ -72,37 +50,20 @@ class ProductEdit extends Component
 
                 if ($response->successful()) {
                     $data = $response->json();
-                    $this->product = $data['data'];
-
-                    $this->populateFormFields();
+                    $this->form->fillFromProduct($data['data']);
                 } else {
                     $this->error = 'Product not found.';
                 }
             }
         } catch (\Exception $e) {
             $this->error = 'Unable to load product. Please try again.';
-        } finally {
-            $this->loading = false;
         }
     }
 
-    private function populateFormFields(): void
-    {
-        $this->name = $this->product['name'];
-        $this->sku = $this->product['sku'];
-        $this->description = $this->product['description'] ?? '';
-        $this->price = $this->product['price'];
-        $this->stock_quantity = $this->product['stock_quantity'];
-        $this->suppliers = $this->product['suppliers']['data'] ?? [];
-    }
 
     public function updateProduct(): void
     {
-        $this->validate();
-
-        $this->loading = true;
         $this->error = '';
-        $this->success = '';
 
         try {
             $token = session('auth_token');
@@ -112,27 +73,14 @@ class ProductEdit extends Component
                 return;
             }
 
-            $apiClient = app(InventoryApiClient::class);
-            $response = $apiClient->updateProduct($this->productId, [
-                'name' => $this->name,
-                'description' => $this->description,
-                'price' => $this->price,
-                'stock_quantity' => $this->stock_quantity,
-            ], $token);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $this->product = $data['data'];
-                $this->success = 'Product updated successfully!';
-
-                $this->populateFormFields();
+            if ($this->form->update($token)) {
+                session()->flash('status', 'Product updated successfully!');
+                $this->redirect('/', navigate: true);
             } else {
                 $this->error = 'Unable to update product. Please try again.';
             }
         } catch (\Exception $e) {
             $this->error = 'Unable to connect to server. Please try again.';
-        } finally {
-            $this->loading = false;
         }
     }
 

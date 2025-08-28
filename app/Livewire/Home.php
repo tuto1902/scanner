@@ -13,8 +13,6 @@ class Home extends Component
 
     public string $error = '';
 
-    public bool $loading = false;
-
     #[On('barcode-scanned')]
     public function barcodeScanned($text)
     {
@@ -30,7 +28,6 @@ class Home extends Component
             return;
         }
 
-        $this->loading = true;
         $this->error = '';
 
         try {
@@ -57,8 +54,6 @@ class Home extends Component
             }
         } catch (\Exception $e) {
             $this->error = 'Unable to search product. Please try again.';
-        } finally {
-            $this->loading = false;
         }
     }
 
